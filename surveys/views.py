@@ -163,12 +163,14 @@ def survey_results(request, token):
                 {"text": "Oui", "count": yes_count},
                 {"text": "Non", "count": no_count},
             ]
-            stats.append({"question": q, "type": q.type, "choices": choices})
+            total = yes_count + no_count
+            stats.append({"question": q, "type": q.type, "choices": choices, "total": total})
         else:
             choices = list(
                 q.choices.annotate(count=Count("answers")).values("text", "count")
             )
-            stats.append({"question": q, "type": q.type, "choices": choices})
+            total = sum(c["count"] for c in choices)
+            stats.append({"question": q, "type": q.type, "choices": choices, "total": total})
     responses = survey.responses.prefetch_related(
         "answers__question", "answers__selected_choices"
     )

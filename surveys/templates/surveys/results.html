@@ -62,13 +62,11 @@
               </thead>
               <tbody>
                 {% for c in stat.choices %}
-                {% with total=stat.choices|sum:'count' %}
                 <tr>
                   <td>{{ c.text }}</td>
                   <td><span class="badge bg-primary">{{ c.count }}</span></td>
-                  <td>{% if total > 0 %}{{ c.count|floatformat:0 }}%{% else %}0%{% endif %}</td>
+                  <td>{% if stat.total > 0 %}{{ c.count|floatformat:0 }}%{% else %}0%{% endif %}</td>
                 </tr>
-                {% endwith %}
                 {% endfor %}
               </tbody>
             </table>
