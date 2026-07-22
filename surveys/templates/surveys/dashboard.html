@@ -44,7 +44,7 @@
             <td>
               <div class="d-flex align-items-center gap-2">
                 <code class="bg-light px-2 py-1 rounded small text-truncate" style="max-width: 200px;">{{ request.scheme }}://{{ request.get_host }}{% url 'take_survey' survey.share_token %}</code>
-                <a class="btn btn-sm btn-outline-primary" href="{% url 'take_survey' survey.share_token %}" target="blank" title="Ovrir le lien"><i class="bi bi-box-arrow-up-right"></i></a>
+                <button class="btn btn-sm btn-outline-primary" onclick="copyToClipboard('{{ request.scheme }}://{{ request.get_host }}{% url 'take_survey' survey.share_token %}')" title="Copier le lien"><i class="bi bi-clipboard"></i></button>
               </div>
             </td>
             <td>
@@ -72,4 +72,15 @@
     </div>
   </div>
 </div>
+{% block extra_js %}
+<script>
+function copyToClipboard(text) {
+  navigator.clipboard.writeText(text).then(function() {
+    alert('Lien copié dans le presse-papiers !');
+  }, function(err) {
+    console.error('Erreur lors de la copie: ', err);
+    alert('Erreur lors de la copie du lien');
+  });
+}
+</script>
 {% endblock %}
