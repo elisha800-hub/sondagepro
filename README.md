@@ -70,8 +70,8 @@ Application Django professionnelle pour créer et gérer des sondages en ligne a
 
 ```bash
 # Cloner le repository
-git clone <votre-repo-url>
-cd sondage_django
+git clone https://github.com/elisha800-hub/sondagepro.git
+cd sondagepro
 
 # Créer un environnement virtuel
 python -m venv venv
