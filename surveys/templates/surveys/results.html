@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% block title %}Résultats - {{ survey.title }} - SondagePro{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center flex-wrap mb-4">
+  <div>
+    <h2 class="fw-bold mb-1"><i class="bi bi-bar-chart-line-fill"></i> Résultats : {{ survey.title }}</h2>
+    <p class="text-muted mb-0"><i class="bi bi-people"></i> {{ survey.responses.count }} réponse(s) reçue(s)</p>
+  </div>
+  <div class="btn-group">
+    <a class="btn btn-outline-primary" href="{% url 'export_csv' survey.share_token %}"><i class="bi bi-filetype-csv"></i> Exporter CSV</a>
+    <a class="btn btn-outline-secondary" href="{% url 'dashboard' %}"><i class="bi bi-arrow-left"></i> Retour</a>
+  </div>
+</div>
+
+{% if survey.responses.count == 0 %}
+<div class="card shadow fade-in-up">
+  <div class="card-body text-center py-5">
+    <i class="bi bi-inbox" style="font-size: 4rem; color: var(--muted);"></i>
+    <h3 class="fw-bold mt-3">Aucune réponse pour le moment</h3>
+    <p class="text-muted mb-4">Partagez le lien de votre sondage pour commencer à recevoir des réponses.</p>
+    <div class="input-group" style="max-width: 500px; margin: 0 auto;">
+      <input type="text" class="form-control" value="{{ request.scheme }}://{{ request.get_host }}{% url 'take_survey' survey.share_token %}" readonly>
+      <a class="btn btn-primary" href="{% url 'take_survey' survey.share_token %}" target="blank"><i class="bi bi-box-arrow-up-right"></i> Ouvrir</a>
+    </div>
+  </div>
+</div>
+{% else %}
+<div class="row">
+  {% for stat in stats %}
+  <div class="col-lg-6 mb-4">
+    <div class="card shadow h-100 fade-in-up">
+      <div class="card-body p-4">
+        <h5 class="fw-bold mb-4">
+          <span class="badge bg-secondary me-2">{{ forloop.counter }}</span>
+          {% if stat.type == 'text' %}<i class="bi bi-chat-left-text"></i>{% elif stat.type == 'boolean' %}<i class="bi bi-check2-square"></i>{% elif stat.type == 'single' %}<i class="bi bi-check-circle"></i>{% else %}<i class="bi bi-check-all"></i>{% endif %}
+          {{ stat.question.text }}
+        </h5>
+        {% if stat.type == 'text' %}
+          <div class="bg-light rounded-3 p-3" style="max-height: 300px; overflow-y: auto;">
+            {% if stat.answers %}
+            <ul class="list-group list-group-flush">
+              {% for a in stat.answers %}
+              <li class="list-group-item border-0 px-0">{{ a }}</li>
+              {% endfor %}
+            </ul>
+            {% else %}
+            <p class="text-muted mb-0"><i class="bi bi-inbox"></i> Aucune réponse textuelle.</p>
+            {% endif %}
+          </div>
+        {% else %}
+          <div class="mb-3" style="max-height: 250px;">
+            <canvas id="chart-{{ stat.question.id }}"></canvas>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-sm mb-0">
+              <thead>
+                <tr>
+                  <th>Choix</th>
+                  <th>Nombre</th>
+                  <th>Pourcentage</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for c in stat.choices %}
+                {% with total=stat.choices|sum:'count' %}
+                <tr>
+                  <td>{{ c.text }}</td>
+                  <td><span class="badge bg-primary">{{ c.count }}</span></td>
+                  <td>{% if total > 0 %}{{ c.count|floatformat:0 }}%{% else %}0%{% endif %}</td>
+                </tr>
+                {% endwith %}
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+  {% for stat in stats %}
+  {% if stat.type != 'text' %}
+  (function() {
+    const ctx = document.getElementById('chart-{{ stat.question.id }}').getContext('2d');
+    const labels = [{% for c in stat.choices %}'{{ c.text|escapejs }}'{% if not forloop.last %},{% endif %}{% endfor %}];
+    const data = [{% for c in stat.choices %}{{ c.count }}{% if not forloop.last %},{% endif %}{% endfor %}];
+    const type = {% if stat.type == 'multiple' %}'bar'{% else %}'pie'{% endif %};
+    new Chart(ctx, {
+      type: type,
+      data: {
+        labels: labels,
+        datasets: [{ data: data, backgroundColor: ['#0d6efd','#198754','#ffc107','#dc3545','#6c757d','#0dcaf0','#6610f2'] }]
+      },
+      options: { responsive: true, plugins: { legend: { display: type === 'pie' } } }
+    });
+  })();
+  {% endif %}
+  {% endfor %}
+</script>
+{% endblock %}

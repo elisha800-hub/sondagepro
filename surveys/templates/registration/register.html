@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+{% block title %}Inscription - SondagePro{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6 col-lg-5">
+    <div class="card shadow fade-in-up">
+      <div class="card-body p-4">
+        <div class="text-center mb-4">
+          <div class="mb-3">
+            <i class="bi bi-person-plus-fill" style="font-size: 4rem; background: var(--bg-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i>
+          </div>
+          <h2 class="fw-bold mb-1">Créer un compte</h2>
+          <p class="text-muted">Rejoignez SondagePro en quelques secondes</p>
+        </div>
+        <form method="post" novalidate>
+          {% csrf_token %}
+          <div class="mb-3">
+            <label for="id_username" class="form-label">Nom d'utilisateur</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light"><i class="bi bi-person"></i></span>
+              <input type="text" name="username" class="form-control" id="id_username" placeholder="Choisissez un nom d'utilisateur" required autofocus>
+            </div>
+            {% if form.username.errors %}
+              <div class="text-danger small mt-1">{{ form.username.errors.0 }}</div>
+            {% endif %}
+          </div>
+          <div class="mb-3">
+            <label for="id_email" class="form-label">Adresse email</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light"><i class="bi bi-envelope"></i></span>
+              <input type="email" name="email" class="form-control" id="id_email" placeholder="votre@email.com" required>
+            </div>
+            {% if form.email.errors %}
+              <div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>
+            {% endif %}
+          </div>
+          <div class="mb-3">
+            <label for="id_password1" class="form-label">Mot de passe</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light"><i class="bi bi-lock"></i></span>
+              <input type="password" name="password1" class="form-control" id="id_password1" placeholder="Minimum 8 caractères" required>
+            </div>
+            {% if form.password1.errors %}
+              <div class="text-danger small mt-1">{{ form.password1.errors.0 }}</div>
+            {% endif %}
+            <div class="mt-2">
+              <div class="progress" style="height: 6px;">
+                <div id="password-strength" class="progress-bar" role="progressbar" style="width: 0%;"></div>
+              </div>
+              <small id="password-feedback" class="text-muted"></small>
+            </div>
+          </div>
+          <div class="mb-4">
+            <label for="id_password2" class="form-label">Confirmer le mot de passe</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light"><i class="bi bi-lock-fill"></i></span>
+              <input type="password" name="password2" class="form-control" id="id_password2" placeholder="Répétez le mot de passe" required>
+            </div>
+            {% if form.password2.errors %}
+              <div class="text-danger small mt-1">{{ form.password2.errors.0 }}</div>
+            {% endif %}
+          </div>
+          <button type="submit" class="btn btn-primary w-100 btn-lg mb-3">
+            <i class="bi bi-person-check-fill"></i> Créer mon compte
+          </button>
+        </form>
+        <div class="text-center">
+          <p class="text-muted mb-2">Déjà inscrit ?</p>
+          <a href="{% url 'login' %}" class="text-decoration-none fw-bold">
+            <i class="bi bi-box-arrow-in-right"></i> Se connecter
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+function checkPasswordStrength(password) {
+  let strength = 0;
+  if (password.length >= 8) strength += 1;
+  if (password.length >= 12) strength += 1;
+  if (/[A-Z]/.test(password)) strength += 1;
+  if (/[0-9]/.test(password)) strength += 1;
+  if (/[^A-Za-z0-9]/.test(password)) strength += 1;
+  return strength;
+}
+
+function updatePasswordStrength() {
+  const password = document.getElementById('id_password1').value;
+  const strengthBar = document.getElementById('password-strength');
+  const feedback = document.getElementById('password-feedback');
+  
+  if (!password) {
+    strengthBar.style.width = '0%';
+    strengthBar.className = 'progress-bar';
+    feedback.textContent = '';
+    return;
+  }
+  
+  const strength = checkPasswordStrength(password);
+  const percentages = [0, 20, 40, 60, 80, 100];
+  const colors = ['bg-danger', 'bg-danger', 'bg-warning', 'bg-info', 'bg-success', 'bg-success'];
+  const messages = ['', 'Très faible', 'Faible', 'Moyen', 'Fort', 'Très fort'];
+  
+  strengthBar.style.width = percentages[strength] + '%';
+  strengthBar.className = 'progress-bar ' + colors[strength];
+  feedback.textContent = messages[strength];
+}
+
+document.getElementById('id_password1').addEventListener('input', updatePasswordStrength);
+</script>
+{% endblock %}

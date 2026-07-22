@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+{% block title %}{{ survey.title }} - SondagePro{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="mb-4 fade-in-up">
+      <div class="card shadow">
+        <div class="card-body p-4">
+          <h2 class="fw-bold mb-2"><i class="bi bi-clipboard-check"></i> {{ survey.title }}</h2>
+          <p class="text-muted mb-0">{{ survey.description|default:"Répondez aux questions ci-dessous" }}</p>
+        </div>
+      </div>
+    </div>
+    {% if closed %}
+      <div class="alert alert-warning fade-in-up">
+        <i class="bi bi-exclamation-triangle-fill"></i> Ce sondage est fermé ou expiré.
+      </div>
+    {% else %}
+    <form method="post" id="survey-form" class="card shadow fade-in-up">
+      <div class="card-body p-4">
+        {% csrf_token %}
+        {% if not user.is_authenticated and survey.allow_anonymous %}
+          <div class="mb-4 p-3 bg-light rounded-3">
+            <label for="respondent_email" class="form-label"><i class="bi bi-envelope"></i> Email (optionnel)</label>
+            <input type="email" name="respondent_email" id="respondent_email" class="form-control" placeholder="votre@email.com">
+            <small class="text-muted">Laissez vide pour rester anonyme</small>
+          </div>
+        {% endif %}
+        {% for q in questions %}
+        <div class="question-card {% if q.type == 'text' %}text-type{% elif q.type == 'boolean' %}boolean-type{% elif q.type == 'single' %}single-type{% else %}multiple-type{% endif %}"
+             id="question-{{ q.id }}"
+             data-type="{{ q.type }}"
+             data-conditional-on="{{ q.conditional_on_id|default:'' }}"
+             data-conditional-value="{{ q.conditional_value }}">
+          <div class="mb-3">
+            <h5 class="fw-bold mb-3">
+              <span class="badge bg-secondary me-2">{{ forloop.counter }}</span>
+              {% if q.type == 'text' %}<i class="bi bi-chat-left-text"></i>{% elif q.type == 'boolean' %}<i class="bi bi-check2-square"></i>{% elif q.type == 'single' %}<i class="bi bi-check-circle"></i>{% else %}<i class="bi bi-check-all"></i>{% endif %}
+              {{ q.text }}
+            </h5>
+            {% if q.type == 'text' %}
+              <textarea name="question_{{ q.id }}" class="form-control" rows="4" placeholder="Votre réponse..."></textarea>
+            {% elif q.type == 'boolean' %}
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <div class="form-check card p-3 h-100">
+                    <input class="form-check-input" type="radio" name="question_{{ q.id }}" id="q{{ q.id }}_yes" value="true">
+                    <label class="form-check-label fw-bold" for="q{{ q.id }}_yes">
+                      <i class="bi bi-hand-thumbs-up text-success"></i> Oui
+                    </label>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-check card p-3 h-100">
+                    <input class="form-check-input" type="radio" name="question_{{ q.id }}" id="q{{ q.id }}_no" value="false">
+                    <label class="form-check-label fw-bold" for="q{{ q.id }}_no">
+                      <i class="bi bi-hand-thumbs-down text-danger"></i> Non
+                    </label>
+                  </div>
+                </div>
+              </div>
+            {% elif q.type == 'single' %}
+              {% for c in q.choices.all %}
+              <div class="form-check card p-3 mb-2">
+                <input class="form-check-input" type="radio" name="question_{{ q.id }}" id="q{{ q.id }}_{{ c.id }}" value="{{ c.id }}" data-choice-text="{{ c.text }}">
+                <label class="form-check-label" for="q{{ q.id }}_{{ c.id }}">{{ c.text }}</label>
+              </div>
+              {% endfor %}
+            {% elif q.type == 'multiple' %}
+              {% for c in q.choices.all %}
+              <div class="form-check card p-3 mb-2">
+                <input class="form-check-input" type="checkbox" name="question_{{ q.id }}" id="q{{ q.id }}_{{ c.id }}" value="{{ c.id }}" data-choice-text="{{ c.text }}">
+                <label class="form-check-label" for="q{{ q.id }}_{{ c.id }}">{{ c.text }}</label>
+              </div>
+              {% endfor %}
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary btn-lg w-100"><i class="bi bi-send-fill"></i> Envoyer mes réponses</button>
+      </div>
+    </form>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+function getValues(qid) {
+  const el = document.getElementById('question-' + qid);
+  if (!el || el.classList.contains('d-none')) return [];
+  const type = el.dataset.type;
+  if (type === 'text') {
+    const v = el.querySelector('textarea').value.trim();
+    return v ? [v] : [];
+  }
+  if (type === 'boolean') {
+    const checked = el.querySelector('input[name=question_' + qid + ']:checked');
+    return checked ? [checked.value === 'true' ? 'Oui' : 'Non'] : [];
+  }
+  const checked = el.querySelectorAll('input[name=question_' + qid + ']:checked');
+  return Array.from(checked).map(i => i.dataset.choiceText || i.value);
+}
+function evaluateConditions() {
+  document.querySelectorAll('[data-conditional-on]').forEach(card => {
+    const triggerId = card.dataset.conditionalOn;
+    const expected = card.dataset.conditionalValue;
+    const values = getValues(triggerId);
+    const shouldShow = values.some(v => v === expected);
+    if (shouldShow) {
+      card.classList.remove('d-none');
+    } else {
+      card.classList.add('d-none');
+      card.querySelectorAll('input, textarea').forEach(i => {
+        if (i.type === 'checkbox' || i.type === 'radio') i.checked = false;
+        else i.value = '';
+      });
+    }
+  });
+}
+document.getElementById('survey-form').addEventListener('input', evaluateConditions);
+document.getElementById('survey-form').addEventListener('change', evaluateConditions);
+evaluateConditions();
+</script>
+{% endblock %}

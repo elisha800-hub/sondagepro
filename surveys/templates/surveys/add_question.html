@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% block title %}Questions - {{ survey.title }} - SondagePro{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center flex-wrap mb-4">
+  <div>
+    <h2 class="fw-bold mb-1"><i class="bi bi-question-circle"></i> {{ survey.title }}</h2>
+    <p class="text-muted mb-0">Ajoutez et organisez vos questions</p>
+  </div>
+  <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Retour au tableau de bord</a>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-5">
+    <div class="card shadow fade-in-up">
+      <div class="card-body p-4">
+        <h3 class="fw-bold mb-4"><i class="bi bi-plus-square-fill"></i> Ajouter une question</h3>
+        <form method="post" novalidate>
+          {% csrf_token %}
+          <div class="mb-3">
+            <label for="id_text" class="form-label">Question</label>
+            <input type="text" name="text" class="form-control" id="id_text" placeholder="Entrez votre question" required>
+          </div>
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label for="id_type" class="form-label">Type</label>
+              <select name="type" class="form-select" id="id_type">
+                <option value="single">Choix unique</option>
+                <option value="multiple">Choix multiples</option>
+                <option value="text">Texte libre</option>
+                <option value="boolean">Oui / Non</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="id_order" class="form-label">Ordre</label>
+              <input type="number" name="order" class="form-control" id="id_order" value="{{ questions.count|add:1 }}" min="1">
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label for="id_conditional_on" class="form-label">Conditionnée par</label>
+              <select name="conditional_on" class="form-select" id="id_conditional_on">
+                <option value="">-- Aucune --</option>
+                {% for q in questions %}
+                <option value="{{ q.id }}">{{ q.text|truncatechars:50 }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="id_conditional_value" class="form-label">Valeur déclenchante</label>
+              <input type="text" name="conditional_value" class="form-control" id="id_conditional_value" placeholder="Ex: Oui, Non, ou choix exact">
+            </div>
+          </div>
+          <div id="choices" class="mb-4 p-3 bg-light rounded-3">
+            <h6 class="fw-bold mb-3"><i class="bi bi-list-check"></i> Choix possibles</h6>
+            {{ formset.management_form }}
+            {% for f in formset %}
+              <div class="row g-2 mb-2">
+                <div class="col">{{ f.text }}</div>
+                <div class="col-2">{{ f.order }}</div>
+              </div>
+            {% endfor %}
+          </div>
+          <button type="submit" class="btn btn-primary w-100"><i class="bi bi-plus-lg"></i> Ajouter la question</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-7">
+    <div class="card shadow fade-in-up">
+      <div class="card-body p-4">
+        <h3 class="fw-bold mb-4"><i class="bi bi-list-ol"></i> Questions existantes ({{ questions.count }})</h3>
+        {% if questions %}
+        <div class="list-group list-group-flush">
+          {% for q in questions %}
+          <div class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+              <span class="badge bg-primary me-2">{{ q.order }}</span>
+              <span class="fw-bold">{{ q.text }}</span>
+              <span class="badge bg-light text-dark border ms-2">{{ q.get_type_display }}</span>
+              {% if q.conditional_on %}
+              <span class="badge bg-warning text-dark ms-1"><i class="bi bi-diagram-2"></i> Conditionnelle</span>
+              {% endif %}
+            </div>
+            <a href="{% url 'delete_question' survey.id q.id %}" class="btn btn-sm btn-danger" title="Supprimer"><i class="bi bi-trash"></i></a>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-4 text-muted">
+          <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+          <p class="mt-2 mb-0">Aucune question ajoutée</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+function toggleChoices() {
+  const type = document.getElementById('id_type').value;
+  const div = document.getElementById('choices');
+  if (type === 'single' || type === 'multiple') {
+    div.classList.remove('d-none');
+  } else {
+    div.classList.add('d-none');
+  }
+}
+document.getElementById('id_type').addEventListener('change', toggleChoices);
+toggleChoices();
+</script>
+{% endblock %}

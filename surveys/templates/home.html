@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% block title %}Accueil - SondagePro{% endblock %}
+{% block content %}
+<div class="hero fade-in-up">
+  <div class="container-fluid">
+    <h1 class="display-4 fw-bold mb-3"><i class="bi bi-clipboard-data-pulse"></i> Créez des sondages professionnels</h1>
+    <p class="lead mb-4 mx-auto" style="max-width: 700px;">Plateforme complète de sondage en ligne avec authentification sécurisée, partage par lien, visualisation des résultats et export CSV.</p>
+    {% if user.is_authenticated %}
+      <div class="d-flex justify-content-center gap-3 flex-wrap">
+        <a class="btn btn-light btn-lg" href="{% url 'dashboard' %}"><i class="bi bi-grid-1x2-fill"></i> Tableau de bord</a>
+        <a class="btn btn-outline-light btn-lg" href="{% url 'create_survey' %}"><i class="bi bi-plus-circle-fill"></i> Créer un sondage</a>
+      </div>
+    {% else %}
+      <div class="d-flex justify-content-center gap-3 flex-wrap">
+        <a class="btn btn-light btn-lg" href="{% url 'register' %}"><i class="bi bi-person-plus-fill"></i> Commencer gratuitement</a>
+        <a class="btn btn-outline-light btn-lg" href="{% url 'login' %}"><i class="bi bi-box-arrow-in-right"></i> Se connecter</a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="row g-4 mb-5">
+  <div class="col-md-4">
+    <div class="card h-100 fade-in-up" style="animation-delay: 0.1s;">
+      <div class="card-body text-center p-4">
+        <div class="mb-3">
+          <i class="bi bi-plus-circle-fill feature-icon"></i>
+        </div>
+        <h3 class="fw-bold mb-3">Créer facilement</h3>
+        <p class="text-muted">Construisez vos sondages avec plusieurs types de questions (choix unique, multiples, texte, oui/non) en quelques clics.</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card h-100 fade-in-up" style="animation-delay: 0.2s;">
+      <div class="card-body text-center p-4">
+        <div class="mb-3">
+          <i class="bi bi-share-fill feature-icon"></i>
+        </div>
+        <h3 class="fw-bold mb-3">Partager instantanément</h3>
+        <p class="text-muted">Diffusez un lien unique et sécurisé. Option de réponse anonyme ou authentifiée selon vos besoins.</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card h-100 fade-in-up" style="animation-delay: 0.3s;">
+      <div class="card-body text-center p-4">
+        <div class="mb-3">
+          <i class="bi bi-bar-chart-line-fill feature-icon"></i>
+        </div>
+        <h3 class="fw-bold mb-3">Analyser les résultats</h3>
+        <p class="text-muted">Visualisez les résultats avec des graphiques interactifs et exportez les données en CSV pour analyse approfondie.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row align-items-center g-5 mb-5">
+  <div class="col-lg-6">
+    <div class="card shadow fade-in-up">
+      <div class="card-body p-5">
+        <h2 class="fw-bold mb-4"><i class="bi bi-shield-check"></i> Sécurité & Authentification</h2>
+        <ul class="list-unstyled">
+          <li class="mb-3"><i class="bi bi-check-circle-fill text-success me-2"></i> Authentification utilisateur sécurisée</li>
+          <li class="mb-3"><i class="bi bi-check-circle-fill text-success me-2"></i> Validation des mots de passe</li>
+          <li class="mb-3"><i class="bi bi-check-circle-fill text-success me-2"></i> Tokens de partage uniques</li>
+          <li class="mb-3"><i class="bi bi-check-circle-fill text-success me-2"></i> Protection CSRF</li>
+          <li><i class="bi bi-check-circle-fill text-success me-2"></i> Sessions sécurisées</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card shadow fade-in-up">
+      <div class="card-body p-5">
+        <h2 class="fw-bold mb-4"><i class="bi bi-gear"></i> Fonctionnalités avancées</h2>
+        <ul class="list-unstyled">
+          <li class="mb-3"><i class="bi bi-check-circle-fill text-primary me-2"></i> Questions conditionnelles</li>
+          <li class="mb-3"><i class="bi bi-check-circle-fill text-primary me-2"></i> Date d'expiration des sondages</li>
+          <li class="mb-3"><i class="bi bi-check-circle-fill text-primary me-2"></i> Activation/désactivation instantanée</li>
+          <li class="mb-3"><i class="bi bi-check-circle-fill text-primary me-2"></i> Export CSV des réponses</li>
+          <li><i class="bi bi-check-circle-fill text-primary me-2"></i> Interface responsive moderne</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if not user.is_authenticated %}
+<div class="text-center py-5">
+  <div class="card shadow fade-in-up" style="max-width: 600px; margin: 0 auto;">
+    <div class="card-body p-5">
+      <h2 class="fw-bold mb-3">Prêt à commencer ?</h2>
+      <p class="text-muted mb-4">Rejoignez des milliers d'utilisateurs qui créent des sondages professionnels avec SondagePro.</p>
+      <a class="btn btn-primary btn-lg" href="{% url 'register' %}"><i class="bi bi-person-plus-fill"></i> Créer mon compte gratuit</a>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

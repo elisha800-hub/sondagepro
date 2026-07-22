@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% block title %}Tableau de bord - SondagePro{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center flex-wrap mb-4">
+  <div>
+    <h2 class="fw-bold mb-1"><i class="bi bi-grid-1x2-fill"></i> Tableau de bord</h2>
+    <p class="text-muted mb-0">Gérez tous vos sondages</p>
+  </div>
+  <a class="btn btn-primary" href="{% url 'create_survey' %}"><i class="bi bi-plus-circle-fill"></i> Nouveau sondage</a>
+</div>
+
+<div class="card shadow fade-in-up">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead>
+          <tr>
+            <th><i class="bi bi-card-heading"></i> Titre</th>
+            <th><i class="bi bi-info-circle"></i> Statut</th>
+            <th><i class="bi bi-people"></i> Réponses</th>
+            <th><i class="bi bi-link-45deg"></i> Lien de partage</th>
+            <th><i class="bi bi-gear"></i> Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for survey in surveys %}
+          <tr>
+            <td>
+              <div class="fw-bold">{{ survey.title }}</div>
+              <small class="text-muted">Créé le {{ survey.created_at|date:"d/m/Y" }}</small>
+            </td>
+            <td>
+              {% if survey.status == 'actif' %}
+                <span class="badge bg-success"><i class="bi bi-check-circle-fill"></i> {{ survey.status|title }}</span>
+              {% elif survey.status == 'expiré' %}
+                <span class="badge bg-warning text-dark"><i class="bi bi-clock-history"></i> {{ survey.status|title }}</span>
+              {% else %}
+                <span class="badge bg-danger"><i class="bi bi-x-circle-fill"></i> {{ survey.status|title }}</span>
+              {% endif %}
+            </td>
+            <td>
+              <span class="badge bg-primary">{{ survey.responses.count }}</span>
+            </td>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <code class="bg-light px-2 py-1 rounded small text-truncate" style="max-width: 200px;">{{ request.scheme }}://{{ request.get_host }}{% url 'take_survey' survey.share_token %}</code>
+                <a class="btn btn-sm btn-outline-primary" href="{% url 'take_survey' survey.share_token %}" target="blank" title="Ovrir le lien"><i class="bi bi-box-arrow-up-right"></i></a>
+              </div>
+            </td>
+            <td>
+              <div class="btn-group" role="group">
+                <a class="btn btn-sm btn-outline-primary" href="{% url 'add_question' survey.id %}" title="Gérer les questions"><i class="bi bi-question-circle"></i></a>
+                <a class="btn btn-sm btn-outline-success" href="{% url 'survey_results' survey.share_token %}" title="Voir les résultats"><i class="bi bi-graph-up"></i></a>
+                <a class="btn btn-sm btn-outline-info" href="{% url 'export_csv' survey.share_token %}" title="Exporter CSV"><i class="bi bi-filetype-csv"></i></a>
+                <a class="btn btn-sm btn-outline-warning" href="{% url 'toggle_survey' survey.id %}" title="{% if survey.is_active %}Fermer{% else %}Ouvrir{% endif %}"><i class="bi bi-toggle-{% if survey.is_active %}on{% else %}off{% endif %}"></i></a>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5" class="text-center py-5">
+              <div class="text-muted">
+                <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+                <p class="mt-3 mb-0">Aucun sondage pour le moment.</p>
+                <a href="{% url 'create_survey' %}" class="btn btn-primary mt-3"><i class="bi bi-plus-circle-fill"></i> Créer votre premier sondage</a>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
